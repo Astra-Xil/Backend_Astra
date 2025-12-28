@@ -84,24 +84,30 @@ reviews.post('/', authMiddleware, async c => {
   return c.json({ data })
 })
 
-
-
-
 reviews.get('/', async c => {
-  const anime_id = c.req.query('anime_id')
-  const supabase = createSupabaseClient()
-
-  const { data, error } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('anime_id', anime_id)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    return c.json({ error: error.message }, 500)
-  }
-
-  return c.json({ data })
+  return c.json({
+    ok: true,
+    message: 'reviews route alive',
+    anime_id: c.req.query('anime_id'),
+  })
 })
+
+
+// reviews.get('/', async c => {
+//   const anime_id = c.req.query('anime_id')
+//   const supabase = createSupabaseClient()
+
+//   const { data, error } = await supabase
+//     .from('reviews')
+//     .select('*')
+//     .eq('anime_id', anime_id)
+//     .order('created_at', { ascending: false })
+
+//   if (error) {
+//     return c.json({ error: error.message }, 500)
+//   }
+
+//   return c.json({ data })
+// })
 
 export default reviews
