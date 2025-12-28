@@ -13,8 +13,11 @@ app.use(
   '*',
   cors({
     origin: '*',
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
   })
 )
+
 
 // ★ ヘルスチェックを必ず置く
 app.get('/health', c =>

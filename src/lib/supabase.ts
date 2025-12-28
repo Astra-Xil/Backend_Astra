@@ -8,14 +8,14 @@ export function createSupabaseClient(
   return createClient(
     env.SUPABASE_URL,
     env.SUPABASE_ANON_KEY,
-    {
-      global: authHeader
-        ? {
+    authHeader
+      ? {
+          global: {
             headers: {
-              Authorization: `Bearer ${authHeader}`,
+              Authorization: authHeader,
             },
-          }
-        : undefined,
-    }
+          },
+        }
+      : {}
   )
 }
