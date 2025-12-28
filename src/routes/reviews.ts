@@ -87,17 +87,16 @@ reviews.post('/', authMiddleware, async c => {
 
 
 
-
 reviews.get('/', async c => {
-  const anime_id = c.req.query('anime_id')
   const supabase = createSupabaseClient(c.env)
+
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
-    .eq('anime_id', anime_id)
-    .order('created_at', { ascending: false })
+    .limit(1)
 
   if (error) {
+    console.error('SUPABASE ERROR:', error)
     return c.json({ error: error.message }, 500)
   }
 
