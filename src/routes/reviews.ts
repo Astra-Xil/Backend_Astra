@@ -84,7 +84,7 @@ reviews.post('/', authMiddleware, async c => {
   return c.json({ data })
 })
 
-export default reviews
+
 
 
 reviews.get('/', async c => {
@@ -103,3 +103,5 @@ reviews.get('/', async c => {
 
   return c.json({ data })
 })
+
+export default reviews
