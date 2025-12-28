@@ -1,13 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
 
-export const createSupabaseClient = (accessToken?: string) => {
+type Env = {
+  SUPABASE_URL: string
+  SUPABASE_ANON_KEY: string
+}
+
+export function createSupabaseClient(
+  env: Env,
+  authHeader?: string
+) {
   return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
+    env.SUPABASE_URL,
+    env.SUPABASE_ANON_KEY,
     {
       global: {
-        headers: accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
+        headers: authHeader
+          ? { Authorization: authHeader }
           : {},
       },
       auth: {

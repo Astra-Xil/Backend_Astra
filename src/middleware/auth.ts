@@ -1,8 +1,10 @@
 import type { MiddlewareHandler } from 'hono'
 import { createSupabaseClient } from '../lib/supabase'
 import type { Variables } from '../types/context'
+import type { Env } from '../types/env'
 
 export const authMiddleware: MiddlewareHandler<{
+  Bindings: Env        // ★これを追加
   Variables: Variables
 }> = async (c, next) => {
   const authHeader = c.req.header('Authorization')
@@ -11,7 +13,7 @@ export const authMiddleware: MiddlewareHandler<{
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const supabase = createSupabaseClient(token)
+  const supabase = createSupabaseClient(c.env, token)
 
   const {
     data: { user },
@@ -21,8 +23,8 @@ export const authMiddleware: MiddlewareHandler<{
     return c.json({ error: 'Not authenticated' }, 401)
   }
 
-  c.set('user', user)
   c.set('accessToken', token)
+  c.set('user', user)
 
   await next()
 }

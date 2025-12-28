@@ -3,8 +3,9 @@ import { authMiddleware } from '../middleware/auth'
 import { createSupabaseClient } from '../lib/supabase'
 import { analyzePerspectiveDirect } from '../lib/analyzePerspectiveDirect'
 import type { Variables } from '../types/context'
-
+import type { Env } from '../types/env'
 const reviews = new Hono<{
+    Bindings: Env  
   Variables: Variables
 }>()
 
@@ -15,7 +16,7 @@ reviews.post('/', authMiddleware, async c => {
 
   const user = c.get('user')
   const accessToken = c.get('accessToken')
-  const supabase = createSupabaseClient(accessToken)
+  const supabase = createSupabaseClient(c.env, accessToken)
 
   // =======================
   // ① NGワード
@@ -89,8 +90,7 @@ reviews.post('/', authMiddleware, async c => {
 
 reviews.get('/', async c => {
   const anime_id = c.req.query('anime_id')
-  const supabase = createSupabaseClient()
-
+  const supabase = createSupabaseClient(c.env)
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
