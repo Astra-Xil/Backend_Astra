@@ -7,12 +7,19 @@ export const authMiddleware: MiddlewareHandler<{
   Bindings: Env
   Variables: Variables
 }> = async (c, next) => {
-  const authHeader = c.req.header('Authorization')
+
+  // ✅ preflight は必ず通す
+  if (c.req.method === 'OPTIONS') {
+    return await next()
+  }
+
+  // ✅ 小文字で取得
+  const authHeader = c.req.header('authorization')
   if (!authHeader) {
     return c.json({ error: 'Not authenticated' }, 401)
   }
 
-  // 🔥 Bearer 付きのまま渡す
+  // ✅ Bearer 付きのまま Supabase に渡す（Next.js と同じ）
   const supabase = createSupabaseClient(c.env, authHeader)
 
   const {
@@ -24,8 +31,8 @@ export const authMiddleware: MiddlewareHandler<{
     return c.json({ error: 'Invalid token' }, 401)
   }
 
-  // INSERT 用に raw token が欲しければ分けて保持
-  const accessToken = authHeader.replace('Bearer ', '')
+  // UI 用に raw token が必要なら分離
+  const accessToken = authHeader.replace(/^Bearer\s+/i, '')
 
   c.set('accessToken', accessToken)
   c.set('user', user)
