@@ -1,12 +1,14 @@
 import { Hono } from 'hono'
-import { renderer } from './renderer'
+import { cors } from 'hono/cors'
+import type { Variables } from './types/context'
+import reviews from './routes/reviews'
+const app = new Hono<{
+  Variables: Variables
+}>()
 
-const app = new Hono()
+app.use('*', cors({
+  origin: '*', // 後で Next.js ドメインだけに絞る
+}))
 
-app.use(renderer)
-
-app.get('/', (c) => {
-  return c.render(<h1>Hello!</h1>)
-})
-
+app.route('/reviews', reviews)
 export default app
