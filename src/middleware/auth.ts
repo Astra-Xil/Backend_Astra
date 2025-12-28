@@ -7,7 +7,9 @@ export const authMiddleware: MiddlewareHandler<{
   Bindings: Env
   Variables: Variables
 }> = async (c, next) => {
-
+    console.log('METHOD:', c.req.method)
+console.log('AUTH HEADER:', c.req.header('authorization'))
+console.log('RAW HEADERS:', [...c.req.raw.headers.entries()])
   // ✅ preflight は必ず通す
   if (c.req.method === 'OPTIONS') {
     return await next()
