@@ -85,6 +85,8 @@ reviews.post('/', authMiddleware, async c => {
 })
 
 export default reviews
+
+
 reviews.get('/', async c => {
   const anime_id = c.req.query('anime_id')
   const supabase = createSupabaseClient()
