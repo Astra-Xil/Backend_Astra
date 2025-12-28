@@ -5,8 +5,8 @@ import { analyzePerspectiveDirect } from '../lib/analyzePerspectiveDirect'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
 const reviews = new Hono<{
-    Bindings: Env  
-  Variables: Variables
+    Bindings: Env
+    Variables: Variables
 }>()
 
 reviews.post('/', authMiddleware, async c => {
