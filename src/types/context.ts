@@ -1,6 +1,13 @@
-import type { User } from '@supabase/supabase-js'
+export type AuthUser = {
+  id: string
+  email?: string | null
+}
 
 export type Variables = {
   accessToken: string
-  user: User
+  user: AuthUser
+}
+
+declare module 'hono' {
+  interface ContextVariableMap extends Variables {}
 }
