@@ -1,0 +1,5 @@
+
+name = "backend_astra"
+main = "src/index.tsx"
+compatibility_date = "2025-08-03"
+

@@ -20,6 +20,12 @@ app.use(
 app.get('/health', c =>
   c.json({ status: 'ok', service: 'astra-api' })
 )
+app.get('/debug/env', c => {
+  return c.json({
+    SUPABASE_URL: c.env.SUPABASE_URL ?? null,
+    SUPABASE_ANON_KEY: c.env.SUPABASE_ANON_KEY ? 'exists' : null,
+  })
+})
 
 app.route('/reviews', reviews)
 
