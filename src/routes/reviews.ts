@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../middleware/auth'
 import { createSupabaseClient } from '../lib/supabase'
-// import { analyzePerspectiveDirect } from '../lib/analyzePerspectiveDirect'
+import { analyzePerspectiveDirect } from '../lib/analyzePerspectiveDirect'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
 const reviews = new Hono<{
@@ -43,27 +43,27 @@ reviews.post('/', authMiddleware, async c => {
   // =======================
   // ③ Perspective（3秒）
   // =======================
-//   let toxicity = 0
-//   let insult = 0
-//   let profanity = 0
+  let toxicity = 0
+  let insult = 0
+  let profanity = 0
 
-//   try {
-//     const controller = new AbortController()
-//     const timeoutId = setTimeout(() => controller.abort(), 3000)
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
 
-//     const result = await analyzePerspectiveDirect(text, controller.signal)
-//     clearTimeout(timeoutId)
+    const result = await analyzePerspectiveDirect(text, controller.signal)
+    clearTimeout(timeoutId)
 
-//     toxicity = result.attributeScores?.TOXICITY?.summaryScore?.value ?? 0
-//     insult = result.attributeScores?.INSULT?.summaryScore?.value ?? 0
-//     profanity = result.attributeScores?.PROFANITY?.summaryScore?.value ?? 0
-//   } catch {
-//     // 死んでも通す
-//   }
+    toxicity = result.attributeScores?.TOXICITY?.summaryScore?.value ?? 0
+    insult = result.attributeScores?.INSULT?.summaryScore?.value ?? 0
+    profanity = result.attributeScores?.PROFANITY?.summaryScore?.value ?? 0
+  } catch {
+    // 死んでも通す
+  }
 
-//   if (toxicity > 0.75 || insult > 0.7 || profanity > 0.65) {
-//     return c.json({ error: '不適切な表現が含まれています。' }, 400)
-//   }
+  if (toxicity > 0.75 || insult > 0.7 || profanity > 0.65) {
+    return c.json({ error: '不適切な表現が含まれています。' }, 400)
+  }
 
   // =======================
   // ④ INSERT
