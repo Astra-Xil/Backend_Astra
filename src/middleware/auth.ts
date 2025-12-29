@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from 'hono'
-import { createSupabaseClient } from '../lib/supabase'
+import { verifySupabaseJWT } from '../lib/verifySupabaseJWT'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
 
@@ -17,14 +17,14 @@ export const authMiddleware: MiddlewareHandler<{
   const token = authHeader.replace(/^Bearer\s+/i, '')
 
   try {
-    const supabase = createSupabaseClient(c.env)
-    const { data, error } = await supabase.auth.getUser(token)
-    if (error || !data.user) {
+    const payload = await verifySupabaseJWT(token)
+
+    if (!payload.sub) {
       return c.json({ error: 'Invalid token' }, 401)
     }
 
-    const { id, email } = data.user
-    c.set('user', { id})
+    // ✅ id だけで十分
+    c.set('user', { id: payload.sub })
     c.set('accessToken', token)
 
     await next()
