@@ -27,6 +27,7 @@ export const authMiddleware: MiddlewareHandler<{
     c.set('user', { id })
     c.set('accessToken', token)
 
+
     await next()
   } catch {
     return c.json({ error: 'Invalid token' }, 401)

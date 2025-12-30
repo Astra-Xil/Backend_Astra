@@ -12,7 +12,9 @@ export function createSupabaseClient(
       ? {
           global: {
             headers: {
-              Authorization: authHeader,
+              Authorization: authHeader.startsWith('Bearer ')
+                ? authHeader
+                : `Bearer ${authHeader}`,
             },
           },
         }

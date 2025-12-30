@@ -12,7 +12,11 @@ const reviews = new Hono<{
 reviews.post('/', authMiddleware, async c => {
   const body = await c.req.json()
   const { anime_id, score, comment } = body
-  const text = comment as string
+  if (!anime_id || typeof comment !== 'string' || typeof score !== 'number') {
+    return c.json({ error: 'Invalid payload' }, 400)
+  }
+
+  const text = comment
 
   const user = c.get('user')
   const accessToken = c.get('accessToken')
