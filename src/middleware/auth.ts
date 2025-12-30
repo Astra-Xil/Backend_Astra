@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
-import { createSupabaseClient } from '../lib/supabase'
+import { getCookie } from 'hono/cookie'
+import { createSupabaseClient, SUPABASE_AUTH_COOKIE } from '../lib/supabase'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
 
@@ -10,11 +11,20 @@ export const authMiddleware: MiddlewareHandler<{
   if (c.req.method === 'OPTIONS') return next()
 
   const authHeader = c.req.header('authorization')
-  if (!authHeader) {
-    return c.json({ error: 'Not authenticated' }, 401)
-  }
+  const sessionCookie = getCookie(c, SUPABASE_AUTH_COOKIE)
+  const token =
+    authHeader?.replace(/^Bearer\s+/i, '') ??
+    (() => {
+      if (!sessionCookie) return null
+      try {
+        const session = JSON.parse(sessionCookie) as { access_token?: string }
+        return session.access_token ?? null
+      } catch {
+        return null
+      }
+    })()
 
-  const token = authHeader.replace(/^Bearer\s+/i, '')
+  if (!token) return c.json({ error: 'Not authenticated' }, 401)
 
   try {
     const supabase = createSupabaseClient(c.env)

@@ -5,6 +5,7 @@ import reviews from './routes/reviews'
 import type { Env } from './types/env'
 import animeSearch from './routes/animeSearch'
 import animeDetail from './routes/animeDetail'
+import auth from './routes/auth'
 
 const app = new Hono<{
   Variables: Variables
@@ -28,6 +29,7 @@ app.get('/health', c =>
 
 app.route("/api/anime/search", animeSearch);
 app.route("/api/anime", animeDetail);
+app.route('/auth', auth)
 app.route('/reviews', reviews)
 
 export default app
