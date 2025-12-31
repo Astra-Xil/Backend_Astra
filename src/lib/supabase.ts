@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Env } from '../types/env'
 
-export const SUPABASE_AUTH_COOKIE = 'sb-auth-token'
-
 export function createSupabaseClient(
   env: Env,
   authHeader?: string
