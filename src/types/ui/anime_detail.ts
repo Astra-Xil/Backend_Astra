@@ -9,13 +9,13 @@ export type AnimeDetailUI = {
   }
 
   meta: {
+    seasonYear?: number
+    season?: string
     seasonText?: string
     genresText?: string
     studiosText?: string
     durationText?: string
   }
-
-  
 
   images: {
     coverLarge?: string

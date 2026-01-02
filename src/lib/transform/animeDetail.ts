@@ -3,10 +3,7 @@ import type { AnimeDetail } from "../../types/api/anime_detail"
 import type { AnimeDetailUI } from "../../types/ui/anime_detail"
 
 export function mapAnimeDetailToUI(api: AnimeDetail): AnimeDetailUI {
-  const seasonText =
-    api.seasonYear && api.season
-      ? `${api.seasonYear} ${api.season}`
-      : undefined
+
 
   return {
     id: api.malId ?? api.anilistId,
@@ -15,12 +12,13 @@ export function mapAnimeDetailToUI(api: AnimeDetail): AnimeDetailUI {
 
     hero: {
       episodesText:
-        api.episodes != null ? `${api.episodes}話` : undefined,
+        api.episodes != null ? `${api.episodes}` : undefined,
       statusText: api.status ?? undefined,
     },
 
     meta: {
-      seasonText,
+      seasonYear: api.seasonYear ?? undefined,
+      season: api.season ?? undefined,
       genresText:
         api.genres.length > 0 ? api.genres.join(" / ") : undefined,
       studiosText:
