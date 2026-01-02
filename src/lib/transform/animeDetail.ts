@@ -1,44 +1,61 @@
-import type { JikanAnimeDetail } from "../../types/api/jikan_detail";
-import type { AnimeDetailUI } from "../../types/ui/anime_detail";
+// src/lib/transform/animeDetail.ts
+import type { AnimeDetail } from "../../types/api/anime_detail"
+import type { AnimeDetailUI } from "../../types/ui/anime_detail"
 
-export function toAnimeDetailUI(a: JikanAnimeDetail): AnimeDetailUI {
-  const youtubeId =
-    a.trailer?.youtube_id ??
-    extractYoutubeId(a.trailer?.embed_url ?? undefined);
+export function mapAnimeDetailToUI(api: AnimeDetail): AnimeDetailUI {
+  const seasonText =
+    api.seasonYear && api.season
+      ? `${api.seasonYear} ${api.season}`
+      : undefined
 
   return {
-    id: a.mal_id,
-    title: a.title,
-    titleSub: a.title_japanese || a.title_english || undefined,
-    imageUrl:
-      a.images?.webp?.large_image_url ||
-      a.images?.jpg?.large_image_url ||
-      "",
-    imagePreviewUrl:
-      a.images?.webp?.image_url ||
-      a.images?.jpg?.image_url ||
-      "",
-    hero: {
-      scoreText: a.score ? a.score.toFixed(1) : "未評価",
-      episodesText: a.episodes ? `${a.episodes}話` : "話数未定",
-      statusLabel: a.status ?? "不明",
-    },
-    meta: {
-      genres: a.genres?.map((g) => g.name) ?? [],
-      studios: a.studios?.map((s) => s.name) ?? [],
-      yearText: a.year ? `${a.year}年` : "年不明",
-      durationText: a.duration ?? "不明",
-    },
-    synopsis: a.synopsis ?? "あらすじ未登録",
-    trailer: {
-      url: a.trailer?.url ?? "",
-      youtubeId,
-    },
-  };
-}
+    id: api.malId ?? api.anilistId,
 
-function extractYoutubeId(embedUrl?: string): string {
-  if (!embedUrl) return "";
-  const match = embedUrl.match(/embed\/([^?]+)/);
-  return match ? match[1] : "";
+    title: api.title.native ?? "",
+
+    hero: {
+      episodesText:
+        api.episodes != null ? `${api.episodes}話` : undefined,
+      statusText: api.status ?? undefined,
+    },
+
+    meta: {
+      seasonText,
+      genresText:
+        api.genres.length > 0 ? api.genres.join(" / ") : undefined,
+      studiosText:
+        api.studios.length > 0 ? api.studios.join(" / ") : undefined,
+      durationText:
+        api.duration != null ? `${api.duration}分` : undefined,
+    },
+
+    images: {
+      coverLarge: api.images.cover?.large ?? undefined,
+      coverColor: api.images.cover?.color ?? undefined,
+      banner: api.images.banner ?? undefined,
+    },
+
+    synopsis:
+      api.description && api.description.length > 0
+        ? api.description
+        : undefined,
+
+    trailer:
+      api.trailer?.site === "youtube" && api.trailer.id
+        ? {
+            youtubeId: api.trailer.id,
+            url: `https://www.youtube.com/watch?v=${api.trailer.id}`,
+          }
+        : undefined,
+
+    siteUrl: api.siteUrl ?? undefined,
+
+   externalLinks: api.externalLinks.length
+  ? api.externalLinks.map((l) => ({
+      site: l.site,
+      url: l.url,
+      icon: l.icon ?? undefined, // ← ここが答え
+    }))
+  : undefined,
+  }
 }
