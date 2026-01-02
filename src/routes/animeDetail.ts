@@ -8,6 +8,16 @@ const anime = new Hono()
 const ENDPOINT = "https://graphql.anilist.co"
 
 anime.get("/:malId", async (c) => {
+  const cache = (globalThis as any).caches.default
+  const cacheKey = new Request(c.req.url)
+
+  // ① cache check
+  const cached = await cache.match(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  // ② param validation
   const malId = Number(c.req.param("malId"))
   if (Number.isNaN(malId)) {
     return c.json({ error: "invalid mal id" }, 400)
@@ -42,42 +52,41 @@ anime.get("/:malId", async (c) => {
 
   let res: Response
 
+  // ③ fetch
   try {
     res = await fetch(ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        // ★ UA必須（AniList対策）
         "User-Agent": "astra/1.0 (contact: you@example.com)",
       },
-      body: JSON.stringify({
-        query,
-        variables: { malId },
-      }),
+      body: JSON.stringify({ query, variables: { malId } }),
     } as any)
   } catch (err) {
     console.error("AniList fetch threw:", err)
     return c.json({ error: "AniList fetch error" }, 503)
   }
 
-  // ★ HTTPレベル失敗の詳細ログ
+  // ④ rate limit 最優先
+  if (res.status === 429) {
+    const retryAfter = Number(res.headers.get("Retry-After") ?? "60")
+    return c.json({ error: "rate limited", retryAfter }, 429)
+  }
+
+  // ⑤ HTTP error
   if (!res.ok) {
     const text = await res.text()
     console.error("AniList fetch failed", {
       status: res.status,
-      statusText: res.statusText,
       body: text,
     })
-    return c.json(
-      { error: "AniList fetch failed", status: res.status },
-      502
-    )
+    return c.json({ error: "AniList fetch failed" }, 502)
   }
 
   const json = (await res.json()) as AniListResponse
 
-  // ★ GraphQL error は 200 で来る
+  // ⑥ GraphQL error
   if (json.errors) {
     console.error("AniList GraphQL errors:", json.errors)
     return c.json({ error: "AniList GraphQL error" }, 502)
@@ -88,7 +97,7 @@ anime.get("/:malId", async (c) => {
     return c.json({ error: "not found" }, 404)
   }
 
-  // ★ null安全に APIモデル作成
+  // ⑦ transform
   const apiData: AnimeDetail = {
     anilistId: m.id,
     malId: m.idMal ?? null,
@@ -117,10 +126,11 @@ anime.get("/:malId", async (c) => {
 
   const uiData = mapAnimeDetailToUI(apiData)
 
-  // ★ 成功時だけキャッシュ（任意）
-  c.header("Cache-Control", "public, max-age=3600")
+  // ⑧ success only cache
+  const response = c.json({ data: uiData })
+  await cache.put(cacheKey, response.clone())
 
-  return c.json({ data: uiData })
+  return response
 })
 
 export default anime
