@@ -15,6 +15,8 @@ export type AnimeDetailUI = {
     durationText?: string
   }
 
+  
+
   images: {
     coverLarge?: string
     coverColor?: string
