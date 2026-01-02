@@ -11,9 +11,8 @@ export type AnimeDetailUI = {
   meta: {
     seasonYear?: number
     season?: string
-    seasonText?: string
-    genresText?: string
-    studiosText?: string
+    genres?: string[]
+    studios?: string[]
     durationText?: string
   }
 

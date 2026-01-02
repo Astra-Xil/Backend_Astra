@@ -19,10 +19,8 @@ export function mapAnimeDetailToUI(api: AnimeDetail): AnimeDetailUI {
     meta: {
       seasonYear: api.seasonYear ?? undefined,
       season: api.season ?? undefined,
-      genresText:
-        api.genres.length > 0 ? api.genres.join(" / ") : undefined,
-      studiosText:
-        api.studios.length > 0 ? api.studios.join(" / ") : undefined,
+      genres: api.genres.length ? api.genres : undefined,
+      studios: api.studios.length ? api.studios : undefined,
       durationText:
         api.duration != null ? `${api.duration}分` : undefined,
     },
