@@ -10,7 +10,7 @@ app.get("/", async (c) => {
 
   try {
     const res = await fetch(
-      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(q)}&sfw=true&order_by=popularity&limit=20`,
+      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(q)}&sfw=true&order_by=members&limit=20`,
       {
         cf: { cacheTtl: 60 },
       } as RequestInit & { cf?: { cacheTtl?: number } }
