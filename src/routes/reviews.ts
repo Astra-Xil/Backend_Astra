@@ -5,8 +5,8 @@ import { analyzePerspectiveDirect } from '../lib/analyzePerspectiveDirect'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
 const reviews = new Hono<{
-    Bindings: Env
-    Variables: Variables
+  Bindings: Env
+  Variables: Variables
 }>()
 
 reviews.post('/', authMiddleware, async c => {
@@ -107,10 +107,19 @@ reviews.get('/', async c => {
 
   const { data, error } = await supabase
     .from('reviews')
-    .select('*')
-    .eq('anime_id', animeId) // ← bigint に number を渡す
+    .select(`
+      id,
+      score,
+      comment,
+      created_at,
+      user_id,
+      profiles (
+        name,
+        avatar_url
+      )
+    `)
+    .eq('anime_id', animeId)
     .order('created_at', { ascending: false })
-
   if (error) {
     return c.json({ error: error.message }, 500)
   }
