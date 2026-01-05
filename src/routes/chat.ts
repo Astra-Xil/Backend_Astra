@@ -28,7 +28,7 @@ chat.post('/', authMiddleware, async c => {
 
   const ok = await validateText(content, {
     enablePerspective: true,
-    perspectiveTimeoutMs: 3000,
+    perspectiveTimeoutMs: 1500,
   })
 
   if (!ok) {
