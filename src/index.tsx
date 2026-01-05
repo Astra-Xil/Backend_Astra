@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { Variables } from './types/context'
 import reviews from './routes/reviews'
+import chat from './routes/chat'
 import type { Env } from './types/env'
 import animeSearch from './routes/animeSearch'
 import animeDetail from './routes/animeDetail'
@@ -29,5 +30,6 @@ app.get('/health', c =>
 app.route("/api/anime/search", animeSearch);
 app.route("/api/anime", animeDetail);
 app.route('/reviews', reviews)
+app.route('/chat', chat)
 
 export default app
