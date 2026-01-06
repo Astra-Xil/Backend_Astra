@@ -49,4 +49,46 @@ chat.post('/', authMiddleware, async c => {
 
   return c.json({ success: true })
 })
+
+
+chat.get('/', async c => {
+  const animeIdRaw = c.req.query('anime_id')
+
+  if (!animeIdRaw) {
+    return c.json({ error: 'anime_id is required' }, 400)
+  }
+
+  const animeId = Number(animeIdRaw)
+  if (Number.isNaN(animeId)) {
+    return c.json({ error: 'anime_id must be a number' }, 400)
+  }
+
+  const supabase = createSupabaseClient(c.env)
+
+  const { data, error } = await supabase
+    .from('chat')
+    .select(`
+      id,
+      anime_id,
+      content,
+      created_at,
+      user_id,
+      profiles (
+        id,
+        name,
+        avatar_url
+      )
+    `)
+    .eq('anime_id', animeId)
+    .order('created_at', { ascending: true })
+    .limit(50)
+
+  if (error) {
+    return c.json({ error: error.message }, 500)
+  }
+
+  return c.json({ data })
+})
+
+
 export default chat;
