@@ -24,8 +24,6 @@ chat.post('/', authMiddleware, async c => {
   const accessToken = c.get('accessToken')
   const supabase = createSupabaseClient(c.env, accessToken)
 
-  // moderation（reviews と共通化）
-
   const ok = await validateText(content, {
     enablePerspective: true,
     perspectiveTimeoutMs: 1500,
@@ -35,19 +33,33 @@ chat.post('/', authMiddleware, async c => {
     return c.json({ error: '不適切な表現が含まれています。' }, 400)
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('chat')
     .insert({
       anime_id,
       content,
       user_id: user.id,
     })
+    .select(`
+      id,
+      anime_id,
+      content,
+      created_at,
+      user_id,
+      profiles (
+        id,
+        name,
+        avatar_url
+      )
+    `)
+    .single()
 
-  if (error) {
-    return c.json({ error: error.message }, 500)
+  if (error || !data) {
+    return c.json({ error: error?.message ?? 'insert failed' }, 500)
   }
 
-  return c.json({ success: true })
+  // ✅ 正の ChatMessage を返す
+  return c.json(data)
 })
 
 
