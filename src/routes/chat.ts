@@ -43,17 +43,19 @@ chat.post('/', authMiddleware, async c => {
       user_id: user.id,
     })
     .select(`
-      id,
-      anime_id,
-      content,
-      created_at,
-      user_id,
-      profiles (
-        id,
-        name,
-        avatar_url
-      )
-    `)
+  id,
+  anime_id,
+  thread_id,
+  content,
+  created_at,
+  user_id,
+  profiles (
+    id,
+    name,
+    avatar_url
+  )
+`)
+
     .single()
 
   if (error || !data) {
