@@ -1,22 +1,25 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../middleware/auth'
 import { createSupabaseClient } from '../lib/supabase'
-import { validateText } from '../lib/validateText'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
-const chat = new Hono<{
+
+const threads = new Hono<{
   Bindings: Env
   Variables: Variables
 }>()
-chat.post('/', authMiddleware, async c => {
-  const { anime_id, thread_id, content } = await c.req.json()
+
+// =====================
+// スレ作成
+// =====================
+threads.post('/', authMiddleware, async c => {
+  const { anime_id, title } = await c.req.json()
 
   if (
     typeof anime_id !== 'number' ||
-    typeof thread_id !== 'string' ||
-    typeof content !== 'string' ||
-    content.length === 0 ||
-    content.length > 1000
+    typeof title !== 'string' ||
+    title.length === 0 ||
+    title.length > 100
   ) {
     return c.json({ error: 'Invalid payload' }, 400)
   }
@@ -25,29 +28,19 @@ chat.post('/', authMiddleware, async c => {
   const accessToken = c.get('accessToken')
   const supabase = createSupabaseClient(c.env, accessToken)
 
-  const ok = await validateText(content, {
-    enablePerspective: true,
-    perspectiveTimeoutMs: 1500,
-  })
-
-  if (!ok) {
-    return c.json({ error: '不適切な表現が含まれています。' }, 400)
-  }
-
   const { data, error } = await supabase
-    .from('chat')
+    .from('threads')
     .insert({
       anime_id,
-      thread_id,
-      content,
-      user_id: user.id,
+      title,
+      created_by: user.id,
     })
     .select(`
       id,
       anime_id,
-      content,
+      title,
       created_at,
-      user_id,
+      updated_at,
       profiles (
         id,
         name,
@@ -60,37 +53,43 @@ chat.post('/', authMiddleware, async c => {
     return c.json({ error: error?.message ?? 'insert failed' }, 500)
   }
 
-  // ✅ 正の ChatMessage を返す
   return c.json(data)
 })
 
 
-chat.get('/', async c => {
-  const threadId = c.req.query('thread_id')
+// =====================
+// スレ一覧取得
+// =====================
+threads.get('/', async c => {
+  const animeIdRaw = c.req.query('anime_id')
 
-  if (!threadId) {
-    return c.json({ error: 'thread_id is required' }, 400)
+  if (!animeIdRaw) {
+    return c.json({ error: 'anime_id is required' }, 400)
+  }
+
+  const animeId = Number(animeIdRaw)
+  if (Number.isNaN(animeId)) {
+    return c.json({ error: 'anime_id must be a number' }, 400)
   }
 
   const supabase = createSupabaseClient(c.env)
 
   const { data, error } = await supabase
-    .from('chat')
+    .from('threads')
     .select(`
       id,
       anime_id,
-      thread_id,
-      content,
+      title,
       created_at,
-      user_id,
+      updated_at,
       profiles (
         id,
         name,
         avatar_url
       )
     `)
-    .eq('thread_id', threadId)
-    .order('created_at', { ascending: true })
+    .eq('anime_id', animeId)
+    .order('updated_at', { ascending: false })
     .limit(50)
 
   if (error) {
@@ -100,6 +99,4 @@ chat.get('/', async c => {
   return c.json({ data })
 })
 
-
-
-export default chat;
+export default threads
