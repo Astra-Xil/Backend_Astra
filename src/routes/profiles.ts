@@ -49,13 +49,14 @@ profiles.put('/', authMiddleware, async c => {
   const { name, username, bio, avatar_url } = await c.req.json()
 
   if (
-    typeof name !== 'string' ||
-    typeof username !== 'string' ||
-    typeof bio !== 'string' ||
-    typeof avatar_url !== 'string'
-  ) {
-    return c.json({ error: 'Invalid payload' }, 400)
-  }
+  typeof name !== 'string' ||
+  typeof username !== 'string' ||
+  typeof bio !== 'string' ||
+  (avatar_url !== null && typeof avatar_url !== 'string')
+) {
+  return c.json({ error: 'Invalid payload' }, 400)
+}
+
 
   if (username.length < 3 || username.length > 20) {
     return c.json({ error: 'username length invalid' }, 400)
@@ -76,13 +77,15 @@ profiles.put('/', authMiddleware, async c => {
     })
     .eq('id', user.id)
     .select(`
-      id,
-      name,
-      username,
-      bio,
-      avatar_url,
-      updated_at
-    `)
+  id,
+  name,
+  username,
+  bio,
+  avatar_url,
+  created_at,
+  updated_at
+`)
+
     .single()
 
   if (error || !data) {
