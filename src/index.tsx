@@ -7,6 +7,7 @@ import type { Env } from './types/env'
 import animeSearch from './routes/animeSearch'
 import animeDetail from './routes/animeDetail'
 import threads from './routes/threads'
+import profiles from './routes/profiles'
 const app = new Hono<{
   Variables: Variables
   Bindings: Env        // ★これが env の正体
@@ -32,6 +33,6 @@ app.route("/api/anime", animeDetail);
 app.route('/reviews', reviews)
 app.route('/chat', chat)
 app.route("/threads", threads)
-
+app.route("/profiles", profiles)
 
 export default app
