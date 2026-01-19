@@ -4,6 +4,10 @@ import { createSupabaseClient } from '../lib/supabase'
 import { validateText } from '../lib/validateText'
 import type { Variables } from '../types/context'
 import type { Env } from '../types/env'
+
+
+
+
 const chat = new Hono<{
   Bindings: Env
   Variables: Variables
