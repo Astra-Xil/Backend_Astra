@@ -38,6 +38,11 @@ const SOURCES = [
     id: "winter2026",
     title: "2026年冬アニメ",
     url: "https://api.jikan.moe/v4/seasons/2026/winter?limit=10"
+  },
+  {
+    id: "summer2009",
+    title: "2009年夏アニメ",
+    url: "https://api.jikan.moe/v4/seasons/2009/summer?limit=10"
   }
 ]
 
