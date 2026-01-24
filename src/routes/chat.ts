@@ -85,10 +85,6 @@ chat.get('/', async c => {
     100,
   )
 
-  if (beforeParam && Number.isNaN(Date.parse(beforeParam))) {
-    return c.json({ error: 'before must be a valid ISO date string' }, 400)
-  }
-
   const supabase = createSupabaseClient(c.env)
 
   let query = supabase
