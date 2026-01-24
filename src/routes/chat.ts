@@ -73,14 +73,25 @@ chat.post('/', authMiddleware, async c => {
 
 chat.get('/', async c => {
   const threadId = c.req.query('thread_id')
+  const limitParam = c.req.query('limit')
+  const beforeParam = c.req.query('before')
 
   if (!threadId) {
     return c.json({ error: 'thread_id is required' }, 400)
   }
 
+  const limit = Math.min(
+    Math.max(Number.parseInt(limitParam ?? '50', 10) || 50, 1),
+    100,
+  )
+
+  if (beforeParam && Number.isNaN(Date.parse(beforeParam))) {
+    return c.json({ error: 'before must be a valid ISO date string' }, 400)
+  }
+
   const supabase = createSupabaseClient(c.env)
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('chat')
     .select(`
       id,
@@ -96,14 +107,23 @@ chat.get('/', async c => {
       )
     `)
     .eq('thread_id', threadId)
-    .order('created_at', { ascending: true })
-    .limit(50)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (beforeParam) {
+    query = query.lt('created_at', beforeParam)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     return c.json({ error: error.message }, 500)
   }
 
-  return c.json({ data })
+  const ordered = (data ?? []).slice().reverse()
+  const nextCursor = ordered[0]?.created_at ?? null
+
+  return c.json({ data: ordered, nextCursor })
 })
 
 
