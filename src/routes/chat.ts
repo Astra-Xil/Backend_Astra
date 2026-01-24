@@ -87,6 +87,10 @@ chat.get('/', async c => {
 
   const supabase = createSupabaseClient(c.env)
 
+  const normalizedBefore = beforeParam
+    ? beforeParam.replace(/\s([+-]?\d{2}:\d{2})$/, '+$1')
+    : null
+
   let query = supabase
     .from('chat')
     .select(`
@@ -106,8 +110,8 @@ chat.get('/', async c => {
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  if (beforeParam) {
-    query = query.lt('created_at', beforeParam)
+  if (normalizedBefore) {
+    query = query.lt('created_at', normalizedBefore)
   }
 
   const { data, error } = await query
