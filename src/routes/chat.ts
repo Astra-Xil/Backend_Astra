@@ -75,6 +75,7 @@ chat.get('/', async c => {
   const threadId = c.req.query('thread_id')
   const limitParam = c.req.query('limit')
   const beforeParam = c.req.query('before')
+  const afterParam = c.req.query('after')
 
   if (!threadId) {
     return c.json({ error: 'thread_id is required' }, 400)
@@ -89,6 +90,9 @@ chat.get('/', async c => {
 
   const normalizedBefore = beforeParam
     ? beforeParam.replace(/\s([+-]?\d{2}:\d{2})$/, '+$1')
+    : null
+  const normalizedAfter = afterParam
+    ? afterParam.replace(/\s([+-]?\d{2}:\d{2})$/, '+$1')
     : null
 
   let query = supabase
@@ -107,11 +111,15 @@ chat.get('/', async c => {
       )
     `)
     .eq('thread_id', threadId)
-    .order('created_at', { ascending: false })
-    .limit(limit)
 
-  if (normalizedBefore) {
-    query = query.lt('created_at', normalizedBefore)
+  if (normalizedAfter) {
+    query = query.gt('created_at', normalizedAfter)
+    query = query.order('created_at', { ascending: true }).limit(limit)
+  } else {
+    query = query.order('created_at', { ascending: false }).limit(limit)
+    if (normalizedBefore) {
+      query = query.lt('created_at', normalizedBefore)
+    }
   }
 
   const { data, error } = await query
@@ -120,8 +128,8 @@ chat.get('/', async c => {
     return c.json({ error: error.message }, 500)
   }
 
-  const ordered = (data ?? []).slice().reverse()
-  const nextCursor = ordered[0]?.created_at ?? null
+  const ordered = normalizedAfter ? (data ?? []) : (data ?? []).slice().reverse()
+  const nextCursor = normalizedAfter ? null : (ordered[0]?.created_at ?? null)
 
   return c.json({ data: ordered, nextCursor })
 })
